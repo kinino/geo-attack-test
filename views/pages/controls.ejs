@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="js/three.min.js"></script>
+</head>
+
+<body>
+
+	<script>
+
+	    var camera, scene, renderer;
+	    var geometry, material, mesh;
+		var hasGP = false;
+		var gp;
+
+		// Objeto fijo
+		var fixedMesh;
+
+	    init();
+	    animate();
+
+	    function init() {
+
+	        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+	        //camera.position.z = 1000;
+
+	        scene = new THREE.Scene();
+
+	        geometry = new THREE.BoxGeometry( 10, 10, 10 );
+	        material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
+
+			var boxMaterials = [
+				new THREE.MeshBasicMaterial({color:0xFF0000}),
+				new THREE.MeshBasicMaterial({color:0x00FF00}),
+				new THREE.MeshBasicMaterial({color:0x0000FF}),
+				new THREE.MeshBasicMaterial({color:0xFFFF00}),
+				new THREE.MeshBasicMaterial({color:0x00FFFF}),
+				new THREE.MeshBasicMaterial({color:0xFFFFFF})
+			];
+
+			var boxMaterial = new THREE.MeshFaceMaterial(boxMaterials);
+
+	        mesh = new THREE.Mesh( geometry, boxMaterial );
+			fixedMesh = new THREE.Mesh( geometry, material );
+
+			fixedMesh.position.set(20, 0, 20);
+
+
+			camera.position.set(40,40,0);
+			camera.lookAt(new THREE.Vector3(0,0,0) );
+			mesh.add(camera);
+
+	        scene.add( mesh );
+			scene.add( fixedMesh );
+
+	        renderer = new THREE.WebGLRenderer();
+	        renderer.setSize( window.innerWidth, window.innerHeight );
+
+	        document.body.appendChild( renderer.domElement );
+
+	    }
+
+	    function animate() {
+
+	        // note: three.js includes requestAnimationFrame shim
+	        requestAnimationFrame( animate );
+
+			//mesh.translateZ(0.3);
+	        //mesh.rotation.x += 0.01;
+	        //mesh.rotation.y += 0.02;
+
+			if (hasGP) {
+				mesh.translateZ( gp.axes[0] * 0.3 * -1 );
+				mesh.translateX( gp.axes[1] * 0.3 );
+				//console.log("CHEFE");
+				reportOnGamepad();
+			}
+
+	        renderer.render( scene, camera );
+
+	    }
+
+		function reportOnGamepad() {
+
+			//console.clear();
+			gp = navigator.getGamepads()[0];
+			console.log( gp.axes[0] + " " + gp.axes[1] );
+			console.log( gp.axes[2] + " " + gp.axes[3] );
+	    }
+
+		window.addEventListener("gamepadconnected", function(e) {
+			console.log("CONEXION");
+			gp = navigator.getGamepads()[0];
+		  hasGP = true;
+		});
+
+	</script>
+
+</body>
+</html>
