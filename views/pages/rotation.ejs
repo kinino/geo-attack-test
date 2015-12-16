@@ -14,7 +14,7 @@
 		var gp;
 		var euler;
 
-		var vecForward;
+		var vecForward, vecUp, vecLeft;
 
 		// Objeto fijo
 		var fixedMesh;
@@ -26,6 +26,8 @@
 
 			hasGP = false;
 			vecForward = new THREE.Vector3(-1,0,0);
+			vecLeft = new THREE.Vector3(0,0,1);
+			vecUp = new THREE.Vector3(0,1,0);
 			euler = new THREE.Euler( 0, 0, 0, 'XYZ' );
 
 	        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
@@ -52,6 +54,9 @@
 
 			fixedMesh.position.set(20, 0, 20);
 
+			mesh.quaternion.x = -1;
+			//mesh.matrixAutoUpdate = false;
+			//mesh.updateMatrix();
 
 			camera.position.set(40,40,0);
 			camera.lookAt(new THREE.Vector3(0,0,0) );
@@ -80,9 +85,9 @@
 				/*mesh.translateZ( gp.axes[0] * 0.3 * -1 );
 				mesh.translateX( gp.axes[1] * 0.3 );*/
 
-				mesh.translateX( vecForward.x );
-				mesh.translateY( vecForward.y );
-				mesh.translateZ( vecForward.z );
+				//mesh.translateX( vecForward.x );
+				//mesh.translateY( vecForward.y );
+				//mesh.translateZ( vecForward.z );
 
 				//console.log("CHEFE");
 				reportOnGamepad();
@@ -102,22 +107,57 @@
 			var x, y, z;
 			x = gp.axes[0];
 			y = gp.axes[1] * -1;
-			/*z = Math.sqrt( Math.abs(1 - x*x - y*y) );
 
-			console.log( 1 - x*x - y*y );
+			var angX = 0;
+			var angY = 0;
 
-			euler.set( (0.9*euler.x + 0.1*x), (0.9*euler.y + 0.1*y), (0.9*euler.z + 0.1*z) , 'XYZ' );
+			angY = Math.asin(y);
+			angX = Math.asin(x);
 
-			//mesh.rotateOnAxis( axis, angle );
+			var vecForward2, vecUp2, vecLeft2;
 
-			vecForward.applyEuler(euler);
-			//mesh.rotation = euler;
+			vecForward2 = new THREE.Vector3();
+			vecUp2 = new THREE.Vector3();
+			vecLeft2 = new THREE.Vector3();
 
-			console.log( "X: " + euler.x + "  Y: " + euler.y + " Z: " + euler.z  );
-			console.log( "X: " + vecForward.x + "  Y: " + vecForward.y + " Z: " + vecForward.z  );*/
-			
+			vecForward2.copy(vecForward);
+			vecUp2.copy(vecUp);
+			vecLeft2.copy(vecLeft);
 
-	    }
+			vecForward2.applyAxisAngle(vecUp, angY);
+			vecUp2.applyAxisAngle(new THREE.Vector3(-1*vecForward.x,-1*vecForward.y,-1*vecForward.z), angY);
+
+			vecLeft2.applyAxisAngle(vecForward2, angX);
+			vecForward2.applyAxisAngle(vecLeft, angX);
+
+			var newQuat = new THREE.Quaternion();
+			newQuat.x = vecForward2.x;
+			newQuat.y = vecForward2.z;
+			newQuat.z = vecForward2.y;
+			newQuat.w = 1;
+
+			//console.log("X: " + newQuat.x);
+			//console.log("Y: " + newQuat.y);
+			//console.log("Z: " + newQuat.z);
+
+			mesh.quaternion.slerp(newQuat, 1);
+
+			//console.log("X: " + mesh.quaternion.x);
+			//console.log("Y: " + mesh.quaternion.y);
+			//console.log("Z: " + mesh.quaternion.z);
+
+			mesh.translateOnAxis(new THREE.Vector3(mesh.quaternion.x, mesh.quaternion.y, mesh.quaternion.z), 0.05);
+			//your_object.position = start_position;
+
+			vecUp.copy(vecUp2);
+			//vecForward.copy(vecForward2);
+
+			vecForward.x = vecForward2.x;
+			vecForward.y = vecForward2.z;
+			vecForward.z = vecForward2.y;
+
+			vecLeft.copy(vecLeft2);
+		}
 
 		window.addEventListener("gamepadconnected", function(e) {
 			console.log("CONEXION");

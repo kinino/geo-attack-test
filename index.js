@@ -23,6 +23,10 @@ app.get('/controls', function(request, response) {
   response.render('pages/controls');
 });
 
+app.get('/rotation', function(request, response) {
+  response.render('pages/rotation');
+});
+
 app.get('/cool', function(request, response) {
   response.send(cool());
 });
