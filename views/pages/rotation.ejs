@@ -54,17 +54,17 @@
 
 			fixedMesh.position.set(20, 0, 20);
 
-			mesh.quaternion.x = -1;
+			//mesh.quaternion.x = -1;
 			//mesh.matrixAutoUpdate = false;
 			//mesh.updateMatrix();
 
 			camera.position.set(40,40,0);
 			camera.lookAt(new THREE.Vector3(0,0,0) );
-			mesh.add(camera);
+			//mesh.add(camera);
 
 	        scene.add( mesh );
 			scene.add( fixedMesh );
-
+			scene.add(camera);
 	        renderer = new THREE.WebGLRenderer();
 	        renderer.setSize( window.innerWidth, window.innerHeight );
 
@@ -114,49 +114,15 @@
 			angY = Math.asin(y);
 			angX = Math.asin(x);
 
-			var vecForward2, vecUp2, vecLeft2;
 
-			vecForward2 = new THREE.Vector3();
-			vecUp2 = new THREE.Vector3();
-			vecLeft2 = new THREE.Vector3();
-
-			vecForward2.copy(vecForward);
-			vecUp2.copy(vecUp);
-			vecLeft2.copy(vecLeft);
-
-			vecForward2.applyAxisAngle(vecUp, angY);
-			vecUp2.applyAxisAngle(new THREE.Vector3(-1*vecForward.x,-1*vecForward.y,-1*vecForward.z), angY);
-
-			vecLeft2.applyAxisAngle(vecForward2, angX);
-			vecForward2.applyAxisAngle(vecLeft, angX);
 
 			var newQuat = new THREE.Quaternion();
-			newQuat.x = vecForward2.x;
-			newQuat.y = vecForward2.z;
-			newQuat.z = vecForward2.y;
-			newQuat.w = 1;
+			newQuat.setFromEuler(new THREE.Euler(0,-1*angX,-1*angY, "XYZ"));
 
-			//console.log("X: " + newQuat.x);
-			//console.log("Y: " + newQuat.y);
-			//console.log("Z: " + newQuat.z);
+			mesh.quaternion.slerp(newQuat, 0.1);
 
-			mesh.quaternion.slerp(newQuat, 1);
+			//mesh.translateOnAxis(new THREE.Vector3(mesh.quaternion.x, mesh.quaternion.y, mesh.quaternion.z), 0.05);
 
-			//console.log("X: " + mesh.quaternion.x);
-			//console.log("Y: " + mesh.quaternion.y);
-			//console.log("Z: " + mesh.quaternion.z);
-
-			mesh.translateOnAxis(new THREE.Vector3(mesh.quaternion.x, mesh.quaternion.y, mesh.quaternion.z), 0.05);
-			//your_object.position = start_position;
-
-			vecUp.copy(vecUp2);
-			//vecForward.copy(vecForward2);
-
-			vecForward.x = vecForward2.x;
-			vecForward.y = vecForward2.z;
-			vecForward.z = vecForward2.y;
-
-			vecLeft.copy(vecLeft2);
 		}
 
 		window.addEventListener("gamepadconnected", function(e) {
