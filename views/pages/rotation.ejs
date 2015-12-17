@@ -54,8 +54,14 @@
 
 			fixedMesh.position.set(20, 0, 20);
 
+			//mesh.position.x=99;
+			//mesh.position.y=99;
+			//mesh.position.z=99;
+
 			//mesh.quaternion.x = -1;
 			//mesh.matrixAutoUpdate = false;
+			mesh.userData = new THREE.Euler( 0, 0, 0, 'XYZ' );
+			//mesh.rotationAutoUpdate = false;
 			//mesh.updateMatrix();
 
 			camera.position.set(40,40,0);
@@ -108,20 +114,58 @@
 			x = gp.axes[0];
 			y = gp.axes[1] * -1;
 
+			//console.log( gp.axes[0] );
+
 			var angX = 0;
 			var angY = 0;
 
 			angY = Math.asin(y);
 			angX = Math.asin(x);
 
+			//console.log("angX: " + angX);
+			//console.log("angY: " + angY);
 
+			/*if (angY > 1)
+				angY = 1;
+			if (angY < -1)
+				angY = -1;
+
+			if (angX > 1)
+				angX = 1;
+			if (angX < -1)
+				angX = -1;*/
 
 			var newQuat = new THREE.Quaternion();
-			newQuat.setFromEuler(new THREE.Euler(0,-1*angX,-1*angY, "XYZ"));
+			mesh.userData = new THREE.Euler(mesh.userData.x+0,mesh.userData.y-angX*0.03,mesh.userData.z-angY*0.03, "XYZ");
+			newQuat.setFromEuler(mesh.userData);
+			//console.log(newQuat);
+			//mesh.quaternion.slerp(newQuat, 1);
+			//console.log(mesh.rotation);
+			mesh.rotation.setFromQuaternion(newQuat);
+			//mesh.rotation = new THREE.Euler(mesh.rotation.x+0,mesh.rotation.y-angX*0.5,mesh.rotation.z-angY*0.5, "XYZ");
+			//console.log(mesh.rotation);
+			//mesh.updateMatrix();
+			//console.log("X: " + mesh.quaternion.x + " Y: " + mesh.quaternion.y + " Z: " + mesh.quaternion.z);
+			//mesh.translateOnAxis(new THREE.Vector3(mesh.quaternion.x, mesh.quaternion.y, mesh.quaternion.z), 1);
 
-			mesh.quaternion.slerp(newQuat, 0.1);
+			//console.log(quaternion);
+			/*vecForward.applyQuaternion(newQuat);
+			var vecTranslation = new THREE.Vector3();
+			vecTranslation.copy(vecForward);
+			vecTranslation.normalize();
+			var dx, dy, dz;
+			dx = vecTranslation.x*0.1;
+			dy = vecTranslation.y*0.1;
+			dz = vecTranslation.z*0.1;
 
-			//mesh.translateOnAxis(new THREE.Vector3(mesh.quaternion.x, mesh.quaternion.y, mesh.quaternion.z), 0.05);
+			mesh.translateX(dx);
+			mesh.translateY(dy);
+			mesh.translateZ(dz);*/
+			//console.log(translation);
+			//mesh.translateX( -1 );
+			//mesh.matrix.setPosition(translation);
+			//mesh.matrix.makeTranslation(translation.x, translation.y, translation.z);
+			//mesh.updateMatrix();
 
 		}
 
