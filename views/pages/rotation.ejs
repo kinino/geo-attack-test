@@ -13,6 +13,7 @@
 		var hasGP;
 		var gp;
 		var euler;
+		var matForward;
 
 		var vecForward, vecUp, vecLeft;
 
@@ -66,11 +67,12 @@
 
 			camera.position.set(40,40,0);
 			camera.lookAt(new THREE.Vector3(0,0,0) );
-			//mesh.add(camera);
+			mesh.add(camera);
+			//mesh.add(new THREE.Plane( new THREE.Vector3(-1,0,0), 0));
 
 	        scene.add( mesh );
 			scene.add( fixedMesh );
-			scene.add(camera);
+			//scene.add(camera);
 	        renderer = new THREE.WebGLRenderer();
 	        renderer.setSize( window.innerWidth, window.innerHeight );
 
@@ -105,16 +107,11 @@
 
 		function reportOnGamepad() {
 
-			//console.clear();
 			gp = navigator.getGamepads()[0];
-			//console.log( gp.axes[0] + " " + gp.axes[1] );
-			//console.log( gp.axes[2] + " " + gp.axes[3] );
 
 			var x, y, z;
 			x = gp.axes[0];
 			y = gp.axes[1] * -1;
-
-			//console.log( gp.axes[0] );
 
 			var angX = 0;
 			var angY = 0;
@@ -122,50 +119,19 @@
 			angY = Math.asin(y);
 			angX = Math.asin(x);
 
-			//console.log("angX: " + angX);
-			//console.log("angY: " + angY);
-
-			/*if (angY > 1)
-				angY = 1;
-			if (angY < -1)
-				angY = -1;
-
-			if (angX > 1)
-				angX = 1;
-			if (angX < -1)
-				angX = -1;*/
-
 			var newQuat = new THREE.Quaternion();
 			mesh.userData = new THREE.Euler(mesh.userData.x+0,mesh.userData.y-angX*0.03,mesh.userData.z-angY*0.03, "XYZ");
+
 			newQuat.setFromEuler(mesh.userData);
-			//console.log(newQuat);
-			//mesh.quaternion.slerp(newQuat, 1);
-			//console.log(mesh.rotation);
 			mesh.rotation.setFromQuaternion(newQuat);
-			//mesh.rotation = new THREE.Euler(mesh.rotation.x+0,mesh.rotation.y-angX*0.5,mesh.rotation.z-angY*0.5, "XYZ");
-			//console.log(mesh.rotation);
-			//mesh.updateMatrix();
-			//console.log("X: " + mesh.quaternion.x + " Y: " + mesh.quaternion.y + " Z: " + mesh.quaternion.z);
-			//mesh.translateOnAxis(new THREE.Vector3(mesh.quaternion.x, mesh.quaternion.y, mesh.quaternion.z), 1);
 
-			//console.log(quaternion);
-			/*vecForward.applyQuaternion(newQuat);
-			var vecTranslation = new THREE.Vector3();
-			vecTranslation.copy(vecForward);
-			vecTranslation.normalize();
-			var dx, dy, dz;
-			dx = vecTranslation.x*0.1;
-			dy = vecTranslation.y*0.1;
-			dz = vecTranslation.z*0.1;
+			/************ TRASLACION **************/
 
-			mesh.translateX(dx);
-			mesh.translateY(dy);
-			mesh.translateZ(dz);*/
-			//console.log(translation);
-			//mesh.translateX( -1 );
-			//mesh.matrix.setPosition(translation);
-			//mesh.matrix.makeTranslation(translation.x, translation.y, translation.z);
-			//mesh.updateMatrix();
+			
+
+			/************ TRASLACION **************/
+
+			mesh.translateOnAxis(vecForward, 0.1);
 
 		}
 
