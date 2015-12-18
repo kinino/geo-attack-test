@@ -130,7 +130,7 @@
 			angX = Math.asin(x);
 
 			var newQuat = new THREE.Quaternion();
-			mesh.userData = new THREE.Euler(mesh.userData.x,mesh.userData.y-angX*0.03,mesh.userData.z-angY*0.03, "XYZ");
+			mesh.userData = new THREE.Euler(mesh.userData.x/*+angX*0.03*/,mesh.userData.y-angX*0.03,mesh.userData.z-angY*0.03, "XYZ");
 
 			newQuat.setFromEuler(mesh.userData);
 			mesh.rotation.setFromQuaternion(newQuat);
@@ -147,7 +147,7 @@
 
 			/************ TRASLACION **************/
 
-			mesh.translateOnAxis(vecForward, 1);
+			mesh.translateOnAxis(vecForward, 5);
 
 		}
 
