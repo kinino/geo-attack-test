@@ -37,7 +37,17 @@
 	        scene = new THREE.Scene();
 
 	        geometry = new THREE.BoxGeometry( 10, 10, 10 );
-	        material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
+	        material = new THREE.MeshBasicMaterial( { color: 0xff0000/*, wireframe: true*/ } );
+
+			var groundGeometry, groundMaterial, ground;
+
+            groundGeometry = new THREE.PlaneGeometry( 1000, 1000, 10, 10 );
+            groundMaterial = new THREE.MeshBasicMaterial({ wireframe: true, color: 0x00FF00 });
+            ground = new THREE.Mesh( groundGeometry, groundMaterial );
+
+			ground.rotation.set(-Math.PI/2, Math.PI/2000, Math.PI);
+
+            scene.add( ground );
 
 			var boxMaterials = [
 				new THREE.MeshBasicMaterial({color:0xFF0000}),
@@ -120,18 +130,24 @@
 			angX = Math.asin(x);
 
 			var newQuat = new THREE.Quaternion();
-			mesh.userData = new THREE.Euler(mesh.userData.x+0,mesh.userData.y-angX*0.03,mesh.userData.z-angY*0.03, "XYZ");
+			mesh.userData = new THREE.Euler(mesh.userData.x,mesh.userData.y-angX*0.03,mesh.userData.z-angY*0.03, "XYZ");
 
 			newQuat.setFromEuler(mesh.userData);
 			mesh.rotation.setFromQuaternion(newQuat);
 
 			/************ TRASLACION **************/
 
-			
+			var plano = new THREE.Plane();
+			plano.setFromCoplanarPoints(mesh.geometry.vertices[4],mesh.geometry.vertices[6],mesh.geometry.vertices[5]);
+
+			vecForward = plano.normal;
+			vecForward.normalize();
+
+			//console.log(vecForward);
 
 			/************ TRASLACION **************/
 
-			mesh.translateOnAxis(vecForward, 0.1);
+			mesh.translateOnAxis(vecForward, 1);
 
 		}
 
