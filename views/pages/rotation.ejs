@@ -8,14 +8,33 @@
 
 	<script>
 
-	    var camera, scene, renderer;
-	    var geometry, material, mesh;
+		var views = [
+			{
+				left: 0,
+				bottom: 0,
+				width: 0.5,
+				height: 1.0,
+				fov: 75
+			},
+			{
+				left: 0.5,
+				bottom: 0,
+				width: 0.5,
+				height: 1.0,
+				fov: 100,
+				eye: [-50, 200, 400]
+			}
+		];
+
+	    var /*camera,*/ scene, renderer;
+	    var geometry, material, mesh, spacecraft;
 		var hasGP;
 		var gp;
 		var euler;
 		var matForward;
 
 		var vecForward, vecUp, vecLeft;
+		var objSp;
 
 		// Objeto fijo
 		var fixedMesh;
@@ -31,13 +50,14 @@
 			vecUp = new THREE.Vector3(0,1,0);
 			euler = new THREE.Euler( 0, 0, 0, 'XYZ' );
 
-	        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+	        //camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
 	        //camera.position.z = 1000;
 
 	        scene = new THREE.Scene();
+			objSp = new THREE.Object3D();
 
 	        geometry = new THREE.BoxGeometry( 10, 10, 10 );
-	        material = new THREE.MeshBasicMaterial( { color: 0xff0000/*, wireframe: true*/ } );
+	        material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
 
 			var groundGeometry, groundMaterial, ground;
 
@@ -60,7 +80,7 @@
 
 			var boxMaterial = new THREE.MeshFaceMaterial(boxMaterials);
 
-	        mesh = new THREE.Mesh( geometry, boxMaterial );
+	        mesh = new THREE.Mesh( geometry, material );
 			fixedMesh = new THREE.Mesh( geometry, material );
 
 			fixedMesh.position.set(20, 0, 20);
@@ -75,12 +95,31 @@
 			//mesh.rotationAutoUpdate = false;
 			//mesh.updateMatrix();
 
-			camera.position.set(40,40,0);
-			camera.lookAt(new THREE.Vector3(0,0,0) );
-			mesh.add(camera);
+			//camera.position.set(40,40,0);
+			//camera.lookAt(new THREE.Vector3(0,0,0) );
+			//mesh.add(camera);
 			//mesh.add(new THREE.Plane( new THREE.Vector3(-1,0,0), 0));
 
-	        scene.add( mesh );
+			// Camara de cubo
+			var view = views[0];
+			camera = new THREE.PerspectiveCamera( view.fov, window.innerWidth / window.innerHeight, 1, 10000 );
+			camera.position.set(40,40,0);
+			camera.lookAt(new THREE.Vector3(0,0,0) );
+			view.camera = camera;
+			mesh.add(camera);
+
+			var loader = new THREE.JSONLoader();
+    		loader.load('js/spacecraft.js', modelLoadedCallback);
+
+			// Camara de escena
+			var view2 = views[1];
+			camera = new THREE.PerspectiveCamera( view2.fov, window.innerWidth / window.innerHeight, 1, 10000 );
+			camera.position.x = view2.eye[ 0 ];
+			camera.position.y = view2.eye[ 1 ];
+			camera.position.z = view2.eye[ 2 ];
+			view2.camera = camera;
+
+	        //scene.add( mesh );
 			scene.add( fixedMesh );
 			//scene.add(camera);
 	        renderer = new THREE.WebGLRenderer();
@@ -89,6 +128,16 @@
 	        document.body.appendChild( renderer.domElement );
 
 	    }
+
+		function modelLoadedCallback(geometry) {
+			spacecraft = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial(geometry.materials));
+			spacecraft.position.x = 0;
+			spacecraft.position.y = 0;
+			spacecraft.position.z = 0;
+			objSp.add(spacecraft);
+			mesh.add(objSp);
+			scene.add( mesh );
+		}
 
 	    function animate() {
 
@@ -111,7 +160,23 @@
 				reportOnGamepad();
 			}
 
-	        renderer.render( scene, camera );
+	        //renderer.render( scene, camera );
+			for ( var ii = 0; ii < views.length; ++ii ) {
+				view = views[ii];
+				camera = view.camera;
+				//view.updateCamera( camera, scene, mouseX, mouseY );
+				var left   = Math.floor( window.innerWidth  * view.left );
+				var bottom = Math.floor( window.innerHeight * view.bottom );
+				var width  = Math.floor( window.innerWidth  * view.width );
+				var height = Math.floor( window.innerHeight * view.height );
+				renderer.setViewport( left, bottom, width, height );
+				renderer.setScissor( left, bottom, width, height );
+				renderer.enableScissorTest ( true );
+				renderer.setClearColor( view.background );
+				camera.aspect = width / height;
+				camera.updateProjectionMatrix();
+				renderer.render( scene, camera );
+			}
 
 	    }
 
@@ -130,9 +195,14 @@
 			angX = Math.asin(x);
 
 			var newQuat = new THREE.Quaternion();
-			mesh.userData = new THREE.Euler(mesh.userData.x/*+angX*0.03*/,mesh.userData.y-angX*0.03,mesh.userData.z-angY*0.03, "XYZ");
+
+			//if ( mesh.userData.z-angY*0.03 < Math.PI /2 )
+			//	mesh.userData = new THREE.Euler(mesh.userData.x/*+angX*0.03*/,mesh.userData.y+angX*0.03,mesh.userData.z-angY*0.03, "XYZ");
+			//else
+				mesh.userData = new THREE.Euler(mesh.userData.x/*+angX*0.03*/,mesh.userData.y-angX*0.03,mesh.userData.z-angY*0.03, "XYZ");
 
 			newQuat.setFromEuler(mesh.userData);
+			console.log(mesh.up);
 			mesh.rotation.setFromQuaternion(newQuat);
 
 			/************ TRASLACION **************/
@@ -147,7 +217,7 @@
 
 			/************ TRASLACION **************/
 
-			mesh.translateOnAxis(vecForward, 5);
+			mesh.translateOnAxis(vecForward, 2);
 
 		}
 
