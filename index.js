@@ -35,9 +35,8 @@ app.listen(app.get('port'), function() {
   console.log('Node app is running on port', app.get('port'));
 });
 
-/*var threeOBJ = require("three-obj")();
+var threeOBJ = require("three-obj")();
 
-threeOBJ.convert("./public/obj/spacecraft.obj", "./public/js/spacecraft.js", function( response ){
-	console.log( "File saved at: public/js/spacecraft.js"  );
+threeOBJ.convert("./public/obj/space.obj", "./public/js/space.js", function( response ){
+	console.log( "File saved at: public/js/space.js"  );
 });
-*/
