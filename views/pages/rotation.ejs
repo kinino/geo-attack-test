@@ -33,8 +33,12 @@
 		var euler;
 		var matForward;
 
+		var anteriorPositivo = true;
+
 		var vecForward, vecUp, vecLeft;
 		var objSp;
+
+		var s1, s2, s3;
 
 		// Objeto fijo
 		var fixedMesh;
@@ -83,7 +87,7 @@
 	        mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true, /*visible:false*/ } ) );
 			fixedMesh = new THREE.Mesh( geometry, material );
 
-			fixedMesh.position.set(20, 0, 20);
+			fixedMesh.position.set(-40, 0, 20);
 
 			//mesh.position.x=99;
 			//mesh.position.y=99;
@@ -103,13 +107,19 @@
 			// Camara de cubo
 			var view = views[0];
 			camera = new THREE.PerspectiveCamera( view.fov, window.innerWidth / window.innerHeight, 1, 10000 );
-			camera.position.set(40,40,0);
+			camera.position.set(25,12,0);
 			camera.lookAt(new THREE.Vector3(0,0,0) );
 			view.camera = camera;
 			mesh.add(camera);
 
 			var loader = new THREE.JSONLoader();
-    		loader.load('js/space.js', modelLoadedCallback);
+    		loader.load('js/space.js', function (model, materials) {
+				spacecraft = new THREE.Mesh( model, new THREE.MeshBasicMaterial({ color: 0x1E90FF }));
+				spacecraft.position.x = 0;
+				spacecraft.position.y = 0;
+				spacecraft.position.z = 0;
+				mesh.add(spacecraft);
+			});
 
 			// Camara de escena
 			var view2 = views[1];
@@ -118,6 +128,20 @@
 			camera.position.y = view2.eye[ 1 ];
 			camera.position.z = view2.eye[ 2 ];
 			view2.camera = camera;
+
+			var geoSphere = new THREE.SphereGeometry( 3, 0.1, 0.1 );
+			var matSphere = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+			s1 = new THREE.Mesh( geoSphere, matSphere );
+			s2 = new THREE.Mesh( geoSphere, matSphere );
+			s3 = new THREE.Mesh( geoSphere, matSphere );
+
+			s1.position.set(5,5,-5);
+			s2.position.set(-5,5,-5);
+			s3.position.set(-5,5,5);
+
+			//mesh.add( s1 );
+			//mesh.add( s2 );
+			//mesh.add( s3 );
 
 	        scene.add( mesh );
 			scene.add( fixedMesh );
@@ -128,15 +152,6 @@
 	        document.body.appendChild( renderer.domElement );
 
 	    }
-
-		function modelLoadedCallback(model, materials) {
-			spacecraft = new THREE.Mesh( model, new THREE.MeshBasicMaterial({ color: 0x1E90FF }));
-			spacecraft.position.x = 0;
-			spacecraft.position.y = 0;
-			spacecraft.position.z = 0;
-			mesh.add(spacecraft);
-			//scene.add( spacecraft );
-		}
 
 	    function animate() {
 
@@ -194,31 +209,81 @@
 			angY = Math.asin(y);
 			angX = Math.asin(x);
 
+			/*if (angY < 0.0000153) {
+				angY = 0;
+			}
+
+			if (angX < 0.0000153) {
+				angX = 0;
+			}*/
+
 			var newQuat = new THREE.Quaternion();
 
 			//if ( mesh.userData.z-angY*0.03 < Math.PI /2 )
 			//	mesh.userData = new THREE.Euler(mesh.userData.x/*+angX*0.03*/,mesh.userData.y+angX*0.03,mesh.userData.z-angY*0.03, "XYZ");
 			//else
+
+			mesh.updateMatrixWorld();
+
+			var v1, v4, v5;
+			v1 = new THREE.Vector3();
+			v4 = new THREE.Vector3();
+			v5 = new THREE.Vector3();
+
+			v1 = mesh.geometry.vertices[1].clone();
+			v4 = mesh.geometry.vertices[4].clone();
+			v5 = mesh.geometry.vertices[5].clone();
+
+			v1.applyMatrix4( mesh.matrixWorld );
+			v4.applyMatrix4( mesh.matrixWorld );
+			v5.applyMatrix4( mesh.matrixWorld );
+
+			var planoUp = new THREE.Plane();
+			planoUp.setFromCoplanarPoints(v1, v4, v5);
+
+			//console.log(angY);
+			//console.log(angX);
+
+			//console.log(mesh.localToWorld(mesh.geometry.vertices[1]));
+			//console.log(mesh.localToWorld(mesh.geometry.vertices[4]));
+			//console.log(mesh.localToWorld(mesh.geometry.vertices[5]));
+			//console.log( mesh.rotation );
+
+			//console.log(planoUp.normal)
+			//vecUp = planoUp.normal;
+			//vecUp.normalize();
+			console.log(planoUp.normal.y);
+			if (planoUp.normal.y > 0) {
+				console.log('+++');
 				mesh.userData = new THREE.Euler(mesh.userData.x/*+angX*0.03*/,mesh.userData.y-angX*0.03,mesh.userData.z-angY*0.03, "XYZ");
+			} else {
+				console.log('---');
+				mesh.userData = new THREE.Euler(mesh.userData.x/*+angX*0.03*/,mesh.userData.y+angX*0.03,mesh.userData.z-angY*0.03, "XYZ");
+			}
 
 			newQuat.setFromEuler(mesh.userData);
-			console.log(mesh.up);
+			//console.log(mesh.up);
 			mesh.rotation.setFromQuaternion(newQuat);
 
 			/************ TRASLACION **************/
 
-			var plano = new THREE.Plane();
+			/*var plano = new THREE.Plane();
 			plano.setFromCoplanarPoints(mesh.geometry.vertices[4],mesh.geometry.vertices[6],mesh.geometry.vertices[5]);
 
 			vecForward = plano.normal;
 			vecForward.normalize();
 
-			//console.log(vecForward);
+			console.log(vecForward);*/
 
 			/************ TRASLACION **************/
 
-			mesh.translateOnAxis(vecForward, 2);
+			//if (hasGP)
+			mesh.translateOnAxis(vecForward, 0.5);
 
+			//s1.position = mesh.localToWorld(mesh.geometry.vertices[1]);
+			//s2.position = mesh.localToWorld(mesh.geometry.vertices[4]);
+			//s3.position = mesh.localToWorld(mesh.geometry.vertices[5]);
+			//mesh.geometry.verticesNeedUpdate = true;
 		}
 
 		window.addEventListener("gamepadconnected", function(e) {
