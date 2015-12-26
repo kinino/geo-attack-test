@@ -142,6 +142,7 @@
 			//mesh.add( s1 );
 			//mesh.add( s2 );
 			//mesh.add( s3 );
+			//mesh.up.project(camera);
 
 	        scene.add( mesh );
 			scene.add( fixedMesh );
@@ -209,6 +210,13 @@
 			angY = Math.asin(y);
 			angX = Math.asin(x);
 
+			var aX, aY, aZ;
+			aX = Math.cos(angX)*Math.cos(angY);
+			aY = Math.sin(angX)*Math.cos(angY);
+			aZ = Math.sin(angY);
+
+			//console.log(aX + " " + aY + " " + aZ);
+
 			/*if (angY < 0.0000153) {
 				angY = 0;
 			}
@@ -222,6 +230,103 @@
 			//if ( mesh.userData.z-angY*0.03 < Math.PI /2 )
 			//	mesh.userData = new THREE.Euler(mesh.userData.x/*+angX*0.03*/,mesh.userData.y+angX*0.03,mesh.userData.z-angY*0.03, "XYZ");
 			//else
+
+			mesh.updateMatrixWorld();
+
+			var v0, v1, v4, v5, v7;
+			v0 = new THREE.Vector3();
+			v1 = new THREE.Vector3();
+			v4 = new THREE.Vector3();
+			v5 = new THREE.Vector3();
+			v7 = new THREE.Vector3();
+
+			v0 = mesh.geometry.vertices[0].clone();
+			v1 = mesh.geometry.vertices[1].clone();
+			v4 = mesh.geometry.vertices[4].clone();
+			v5 = mesh.geometry.vertices[5].clone();
+			v7 = mesh.geometry.vertices[7].clone();
+
+			v0.applyMatrix4( mesh.matrixWorld );
+			v1.applyMatrix4( mesh.matrixWorld );
+			v4.applyMatrix4( mesh.matrixWorld );
+			v5.applyMatrix4( mesh.matrixWorld );
+			v7.applyMatrix4( mesh.matrixWorld );
+
+			var planoUp = new THREE.Plane();
+			planoUp.setFromCoplanarPoints(v1, v4, v5);
+
+			var planoLeft = new THREE.Plane();
+			planoLeft.setFromCoplanarPoints(v0, v5, v7);
+
+			var vecY, vecX;
+
+			vecY = new THREE.Vector3();
+			vecY = planoUp.normal.clone();
+			vecY.normalize();
+
+			vecX = new THREE.Vector3();
+			vecX = planoLeft.normal.clone();
+			vecX.normalize();
+
+			mesh.rotateOnAxis(new THREE.Vector3(1,0,0), -angX*0.02);
+			mesh.rotateOnAxis(new THREE.Vector3(0,1,0), -angX*0.01);
+			mesh.rotateOnAxis(new THREE.Vector3(0,0,1), -angY*0.03);
+			//mesh.rotateOnAxis(new THREE.Vector3(0,0,0), -angY*0.03);
+
+			//console.log(angY);
+			//console.log(angX);
+
+			//console.log(mesh.localToWorld(mesh.geometry.vertices[1]));
+			//console.log(mesh.localToWorld(mesh.geometry.vertices[4]));
+			//console.log(mesh.localToWorld(mesh.geometry.vertices[5]));
+			//console.log( mesh.rotation );
+
+			//console.log(planoUp.normal)
+			//vecUp = planoUp.normal;
+			//vecUp.normalize();
+			//console.log(planoUp.normal.y);
+			//if (planoUp.normal.y > 0) {
+				//console.log('+++');
+			//	mesh.userData = new THREE.Euler(mesh.userData.x/*+angX*0.03*/,mesh.userData.y-angX*0.03,mesh.userData.z-angY*0.03, "XYZ");
+			//} else {
+				//console.log('---');
+			//	mesh.userData = new THREE.Euler(mesh.userData.x/*+angX*0.03*/,mesh.userData.y+angX*0.03,mesh.userData.z-angY*0.03, "XYZ");
+			//}
+			//console.log(mesh.rotation);
+			//newQuat.setFromEuler(mesh.userData);
+			//console.log(mesh.up);
+			//mesh.rotation.setFromQuaternion(newQuat);
+
+			/************ TRASLACION **************/
+
+			/*var plano = new THREE.Plane();
+			plano.setFromCoplanarPoints(mesh.geometry.vertices[4],mesh.geometry.vertices[6],mesh.geometry.vertices[5]);
+
+			vecForward = plano.normal;
+			vecForward.normalize();
+
+			console.log(vecForward);*/
+
+			/************ TRASLACION **************/
+
+			//if (hasGP)
+			mesh.translateOnAxis(vecForward, 1);
+
+			//s1.position = mesh.localToWorld(mesh.geometry.vertices[1]);
+			//s2.position = mesh.localToWorld(mesh.geometry.vertices[4]);
+			//s3.position = mesh.localToWorld(mesh.geometry.vertices[5]);
+			//mesh.geometry.verticesNeedUpdate = true;
+
+			// Convert Euler to vector
+
+
+			//var vecOld = new THREE.Vector3(vecForward.x, vecForward.y, vecForward.z);
+
+			// Transform coordinate system
+			/*var vecNew = new THREE.Vector3();
+			vecNew = vecOld.clone();
+
+			var vecX, vecY, vecZ;
 
 			mesh.updateMatrixWorld();
 
@@ -239,51 +344,8 @@
 			v5.applyMatrix4( mesh.matrixWorld );
 
 			var planoUp = new THREE.Plane();
-			planoUp.setFromCoplanarPoints(v1, v4, v5);
+			planoUp.setFromCoplanarPoints(v1, v4, v5);*/
 
-			//console.log(angY);
-			//console.log(angX);
-
-			//console.log(mesh.localToWorld(mesh.geometry.vertices[1]));
-			//console.log(mesh.localToWorld(mesh.geometry.vertices[4]));
-			//console.log(mesh.localToWorld(mesh.geometry.vertices[5]));
-			//console.log( mesh.rotation );
-
-			//console.log(planoUp.normal)
-			//vecUp = planoUp.normal;
-			//vecUp.normalize();
-			console.log(planoUp.normal.y);
-			if (planoUp.normal.y > 0) {
-				console.log('+++');
-				mesh.userData = new THREE.Euler(mesh.userData.x/*+angX*0.03*/,mesh.userData.y-angX*0.03,mesh.userData.z-angY*0.03, "XYZ");
-			} else {
-				console.log('---');
-				mesh.userData = new THREE.Euler(mesh.userData.x/*+angX*0.03*/,mesh.userData.y+angX*0.03,mesh.userData.z-angY*0.03, "XYZ");
-			}
-
-			newQuat.setFromEuler(mesh.userData);
-			//console.log(mesh.up);
-			mesh.rotation.setFromQuaternion(newQuat);
-
-			/************ TRASLACION **************/
-
-			/*var plano = new THREE.Plane();
-			plano.setFromCoplanarPoints(mesh.geometry.vertices[4],mesh.geometry.vertices[6],mesh.geometry.vertices[5]);
-
-			vecForward = plano.normal;
-			vecForward.normalize();
-
-			console.log(vecForward);*/
-
-			/************ TRASLACION **************/
-
-			//if (hasGP)
-			mesh.translateOnAxis(vecForward, 0.5);
-
-			//s1.position = mesh.localToWorld(mesh.geometry.vertices[1]);
-			//s2.position = mesh.localToWorld(mesh.geometry.vertices[4]);
-			//s3.position = mesh.localToWorld(mesh.geometry.vertices[5]);
-			//mesh.geometry.verticesNeedUpdate = true;
 		}
 
 		window.addEventListener("gamepadconnected", function(e) {
