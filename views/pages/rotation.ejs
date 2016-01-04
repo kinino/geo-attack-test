@@ -8,6 +8,7 @@
 
 	<script>
 
+		// Datos de vistas para testing
 		var views = [
 			{
 				left: 0,
@@ -26,39 +27,44 @@
 			}
 		];
 
-	    var /*camera,*/ scene, renderer;
-	    var geometry, material, mesh, spacecraft;
+		// Pruebas de camara
+		var xG, yG;
+		var angXG, angYG, angZG;
+
+		// Objetos de escenas
+	    var scene, renderer;
+	    var geometry, material, cube, spacecraft;
+
+		// Objetos de Gamepad
 		var hasGP;
 		var gp;
-		var euler;
-		var matForward;
 
-		var anteriorPositivo = true;
-
-		var vecForward, vecUp, vecLeft;
-		var objSp;
-
-		var s1, s2, s3;
+		// Vector <0,-1,0> (frente)
+		var vecForward;
 
 		// Objeto fijo
 		var fixedMesh;
 
+		// Metodos basicos
 	    init();
 	    animate();
 
 	    function init() {
 
+			var directionalLight1 = new THREE.DirectionalLight( 0xffffff, 0.5 );
+			directionalLight1.position.set( 0, 1, 0 );
+			var directionalLight2 = new THREE.DirectionalLight( 0xffffff, 0.5 );
+			directionalLight2.position.set( 0, -1, 0 );
+
+			xG = yG = 0;
+			angXG = angYG = angZG = 0;
+
 			hasGP = false;
 			vecForward = new THREE.Vector3(-1,0,0);
-			vecLeft = new THREE.Vector3(0,0,1);
-			vecUp = new THREE.Vector3(0,1,0);
-			euler = new THREE.Euler( 0, 0, 0, 'XYZ' );
-
-	        //camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
-	        //camera.position.z = 1000;
 
 	        scene = new THREE.Scene();
-			objSp = new THREE.Object3D();
+			scene.add( directionalLight1 );
+			scene.add( directionalLight2 );
 
 	        geometry = new THREE.BoxGeometry( 10, 10, 10 );
 	        material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
@@ -84,25 +90,10 @@
 
 			var boxMaterial = new THREE.MeshFaceMaterial(boxMaterials);
 
-	        mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true, /*visible:false*/ } ) );
+	        cube = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true, /*visible:false*/ } ) );
 			fixedMesh = new THREE.Mesh( geometry, material );
 
 			fixedMesh.position.set(-40, 0, 20);
-
-			//mesh.position.x=99;
-			//mesh.position.y=99;
-			//mesh.position.z=99;
-
-			//mesh.quaternion.x = -1;
-			//mesh.matrixAutoUpdate = false;
-			mesh.userData = new THREE.Euler( 0, 0, 0, 'XYZ' );
-			//mesh.rotationAutoUpdate = false;
-			//mesh.updateMatrix();
-
-			//camera.position.set(40,40,0);
-			//camera.lookAt(new THREE.Vector3(0,0,0) );
-			//mesh.add(camera);
-			//mesh.add(new THREE.Plane( new THREE.Vector3(-1,0,0), 0));
 
 			// Camara de cubo
 			var view = views[0];
@@ -110,15 +101,15 @@
 			camera.position.set(25,12,0);
 			camera.lookAt(new THREE.Vector3(0,0,0) );
 			view.camera = camera;
-			mesh.add(camera);
+			cube.add(camera);
 
 			var loader = new THREE.JSONLoader();
     		loader.load('js/space.js', function (model, materials) {
-				spacecraft = new THREE.Mesh( model, new THREE.MeshBasicMaterial({ color: 0x1E90FF }));
+				spacecraft = new THREE.Mesh( model, new THREE.MeshLambertMaterial({ color: 0x1E90FF }));
 				spacecraft.position.x = 0;
 				spacecraft.position.y = 0;
 				spacecraft.position.z = 0;
-				mesh.add(spacecraft);
+				cube.add(spacecraft);
 			});
 
 			// Camara de escena
@@ -129,22 +120,7 @@
 			camera.position.z = view2.eye[ 2 ];
 			view2.camera = camera;
 
-			var geoSphere = new THREE.SphereGeometry( 3, 0.1, 0.1 );
-			var matSphere = new THREE.MeshBasicMaterial( {color: 0xffff00} );
-			s1 = new THREE.Mesh( geoSphere, matSphere );
-			s2 = new THREE.Mesh( geoSphere, matSphere );
-			s3 = new THREE.Mesh( geoSphere, matSphere );
-
-			s1.position.set(5,5,-5);
-			s2.position.set(-5,5,-5);
-			s3.position.set(-5,5,5);
-
-			//mesh.add( s1 );
-			//mesh.add( s2 );
-			//mesh.add( s3 );
-			//mesh.up.project(camera);
-
-	        scene.add( mesh );
+	        scene.add( cube );
 			scene.add( fixedMesh );
 			//scene.add(camera);
 	        renderer = new THREE.WebGLRenderer();
@@ -156,22 +132,9 @@
 
 	    function animate() {
 
-	        // note: three.js includes requestAnimationFrame shim
 	        requestAnimationFrame( animate );
 
-			//mesh.translateZ(0.3);
-	        //mesh.rotation.x += 0.01;
-	        //mesh.rotation.y += 0.02;
-
 			if (hasGP) {
-				/*mesh.translateZ( gp.axes[0] * 0.3 * -1 );
-				mesh.translateX( gp.axes[1] * 0.3 );*/
-
-				//mesh.translateX( vecForward.x );
-				//mesh.translateY( vecForward.y );
-				//mesh.translateZ( vecForward.z );
-
-				//console.log("CHEFE");
 				reportOnGamepad();
 			}
 
@@ -190,168 +153,60 @@
 				renderer.setClearColor( view.background );
 				camera.aspect = width / height;
 				camera.updateProjectionMatrix();
-				if (spacecraft != undefined)
-					renderer.render( scene, camera );
+				renderer.render( scene, camera );
 			}
 
 	    }
 
 		function reportOnGamepad() {
 
+			// Obtener objeto Gamepad
 			gp = navigator.getGamepads()[0];
 
-			var x, y, z;
+			// Obtener estado de ejes del joystick
+			var x, y;
 			x = gp.axes[0];
 			y = gp.axes[1] * -1;
 
-			var angX = 0;
-			var angY = 0;
+			// Obtener angulo a partir de ejes
+			var angX;
+			var angY;
 
 			angY = Math.asin(y);
 			angX = Math.asin(x);
 
-			var aX, aY, aZ;
-			aX = Math.cos(angX)*Math.cos(angY);
-			aY = Math.sin(angX)*Math.cos(angY);
-			aZ = Math.sin(angY);
+			var fac = 0.95;
 
-			//console.log(aX + " " + aY + " " + aZ);
+			angXG = fac * angXG + (1.0 - fac) * -angX*0.02;
+			angYG = fac * angYG + (1.0 - fac) * -angX*0.01;
+			angZG = fac * angZG + (1.0 - fac) * -angY*0.03;
 
-			/*if (angY < 0.0000153) {
-				angY = 0;
-			}
+			// Aplicar rotacion
+			cube.rotateOnAxis(new THREE.Vector3(1,0,0), angXG);
+			cube.rotateOnAxis(new THREE.Vector3(0,1,0), angYG);
+			cube.rotateOnAxis(new THREE.Vector3(0,0,1), angZG);
 
-			if (angX < 0.0000153) {
-				angX = 0;
-			}*/
+			var xN, yN;
 
-			var newQuat = new THREE.Quaternion();
+			xN = Math.sin(angXG);
+			yN = Math.sin(angYG);
 
-			//if ( mesh.userData.z-angY*0.03 < Math.PI /2 )
-			//	mesh.userData = new THREE.Euler(mesh.userData.x/*+angX*0.03*/,mesh.userData.y+angX*0.03,mesh.userData.z-angY*0.03, "XYZ");
-			//else
+			console.log(xN + " " + yN);
 
-			mesh.updateMatrixWorld();
+			xG = 97.0/100.0 * xG + 3.0/100.0 * x;
+			yG = 97.0/100.0 * yG + 3.0/100.0 * y;
 
-			var v0, v1, v4, v5, v7;
-			v0 = new THREE.Vector3();
-			v1 = new THREE.Vector3();
-			v4 = new THREE.Vector3();
-			v5 = new THREE.Vector3();
-			v7 = new THREE.Vector3();
+			views[0].camera.position.set(25,12+yG*3,0+xG*-3);
 
-			v0 = mesh.geometry.vertices[0].clone();
-			v1 = mesh.geometry.vertices[1].clone();
-			v4 = mesh.geometry.vertices[4].clone();
-			v5 = mesh.geometry.vertices[5].clone();
-			v7 = mesh.geometry.vertices[7].clone();
-
-			v0.applyMatrix4( mesh.matrixWorld );
-			v1.applyMatrix4( mesh.matrixWorld );
-			v4.applyMatrix4( mesh.matrixWorld );
-			v5.applyMatrix4( mesh.matrixWorld );
-			v7.applyMatrix4( mesh.matrixWorld );
-
-			var planoUp = new THREE.Plane();
-			planoUp.setFromCoplanarPoints(v1, v4, v5);
-
-			var planoLeft = new THREE.Plane();
-			planoLeft.setFromCoplanarPoints(v0, v5, v7);
-
-			var vecY, vecX;
-
-			vecY = new THREE.Vector3();
-			vecY = planoUp.normal.clone();
-			vecY.normalize();
-
-			vecX = new THREE.Vector3();
-			vecX = planoLeft.normal.clone();
-			vecX.normalize();
-
-			mesh.rotateOnAxis(new THREE.Vector3(1,0,0), -angX*0.02);
-			mesh.rotateOnAxis(new THREE.Vector3(0,1,0), -angX*0.01);
-			mesh.rotateOnAxis(new THREE.Vector3(0,0,1), -angY*0.03);
-			//mesh.rotateOnAxis(new THREE.Vector3(0,0,0), -angY*0.03);
-
-			//console.log(angY);
-			//console.log(angX);
-
-			//console.log(mesh.localToWorld(mesh.geometry.vertices[1]));
-			//console.log(mesh.localToWorld(mesh.geometry.vertices[4]));
-			//console.log(mesh.localToWorld(mesh.geometry.vertices[5]));
-			//console.log( mesh.rotation );
-
-			//console.log(planoUp.normal)
-			//vecUp = planoUp.normal;
-			//vecUp.normalize();
-			//console.log(planoUp.normal.y);
-			//if (planoUp.normal.y > 0) {
-				//console.log('+++');
-			//	mesh.userData = new THREE.Euler(mesh.userData.x/*+angX*0.03*/,mesh.userData.y-angX*0.03,mesh.userData.z-angY*0.03, "XYZ");
-			//} else {
-				//console.log('---');
-			//	mesh.userData = new THREE.Euler(mesh.userData.x/*+angX*0.03*/,mesh.userData.y+angX*0.03,mesh.userData.z-angY*0.03, "XYZ");
-			//}
-			//console.log(mesh.rotation);
-			//newQuat.setFromEuler(mesh.userData);
-			//console.log(mesh.up);
-			//mesh.rotation.setFromQuaternion(newQuat);
-
-			/************ TRASLACION **************/
-
-			/*var plano = new THREE.Plane();
-			plano.setFromCoplanarPoints(mesh.geometry.vertices[4],mesh.geometry.vertices[6],mesh.geometry.vertices[5]);
-
-			vecForward = plano.normal;
-			vecForward.normalize();
-
-			console.log(vecForward);*/
-
-			/************ TRASLACION **************/
-
-			//if (hasGP)
-			mesh.translateOnAxis(vecForward, 1);
-
-			//s1.position = mesh.localToWorld(mesh.geometry.vertices[1]);
-			//s2.position = mesh.localToWorld(mesh.geometry.vertices[4]);
-			//s3.position = mesh.localToWorld(mesh.geometry.vertices[5]);
-			//mesh.geometry.verticesNeedUpdate = true;
-
-			// Convert Euler to vector
-
-
-			//var vecOld = new THREE.Vector3(vecForward.x, vecForward.y, vecForward.z);
-
-			// Transform coordinate system
-			/*var vecNew = new THREE.Vector3();
-			vecNew = vecOld.clone();
-
-			var vecX, vecY, vecZ;
-
-			mesh.updateMatrixWorld();
-
-			var v1, v4, v5;
-			v1 = new THREE.Vector3();
-			v4 = new THREE.Vector3();
-			v5 = new THREE.Vector3();
-
-			v1 = mesh.geometry.vertices[1].clone();
-			v4 = mesh.geometry.vertices[4].clone();
-			v5 = mesh.geometry.vertices[5].clone();
-
-			v1.applyMatrix4( mesh.matrixWorld );
-			v4.applyMatrix4( mesh.matrixWorld );
-			v5.applyMatrix4( mesh.matrixWorld );
-
-			var planoUp = new THREE.Plane();
-			planoUp.setFromCoplanarPoints(v1, v4, v5);*/
+			// Aplicar traslacion
+			cube.translateOnAxis(vecForward, 3);
 
 		}
 
 		window.addEventListener("gamepadconnected", function(e) {
 			console.log("CONEXION");
 			gp = navigator.getGamepads()[0];
-		  hasGP = true;
+		  	hasGP = true;
 		});
 
 	</script>
