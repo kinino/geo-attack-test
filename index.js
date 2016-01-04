@@ -37,6 +37,6 @@ app.listen(app.get('port'), function() {
 
 /*var threeOBJ = require("three-obj")();
 
-threeOBJ.convert("./public/obj/space.obj", "./public/js/space.js", function( response ){
-	console.log( "File saved at: public/js/space.js"  );
+threeOBJ.convert("./public/obj/space_craft_2.obj", "./public/js/space_craft_2.js", function( response ){
+	console.log( "File saved at: public/js/space_craft_2.js"  );
 });*/
