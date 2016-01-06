@@ -2,11 +2,15 @@
 <html>
 <head>
 	<script src="js/three.min.js"></script>
+	<script src="js/jquery-1.11.3.min.js"></script>
 </head>
 
 <body>
 
 	<script>
+
+		var pressBtn = {87: false, 83: false, 68: false, 65: false};
+		var angXKey, angYKey;
 
 		// Datos de vistas para testing
 		var views = [
@@ -50,6 +54,8 @@
 	    animate();
 
 	    function init() {
+
+			angXKey = angYKey = 0.0;
 
 			var directionalLight1 = new THREE.DirectionalLight( 0xffffff, 0.5 );
 			directionalLight1.position.set( 0, 1, 0 );
@@ -136,6 +142,8 @@
 
 			if (hasGP) {
 				reportOnGamepad();
+			} else {
+				reportOnKeyboard();
 			}
 
 	        //renderer.render( scene, camera );
@@ -158,22 +166,61 @@
 
 	    }
 
-		function reportOnGamepad() {
-
-			// Obtener objeto Gamepad
-			gp = navigator.getGamepads()[0];
-
-			// Obtener estado de ejes del joystick
-			var x, y;
-			x = gp.axes[0];
-			y = gp.axes[1] * -1;
+		function reportOnKeyboard() {
 
 			// Obtener angulo a partir de ejes
 			var angX;
 			var angY;
 
-			angY = Math.asin(y);
-			angX = Math.asin(x);
+			//angY = Math.asin(y);
+			//angX = Math.asin(x);
+
+			if (pressBtn[87]) {
+				if (angYKey < Math.PI / 3.0) {
+					angYKey += 0.02;
+				} else {
+					angYKey = Math.PI / 3.0;
+				}
+			} else if (pressBtn[83]) {
+				if (angYKey > -Math.PI / 3.0) {
+					angYKey -= 0.02;
+				} else {
+					angYKey = -Math.PI / 3.0;
+				}
+			} else {
+				if ( angYKey > 0.0 ) {
+					angYKey -= 0.06;
+					if (angYKey < 0.0) angYKey = 0.0;
+				} else if ( angYKey < 0.0 ) {
+					angYKey += 0.06;
+					if (angYKey > 0.0) angYKey = 0.0;
+				}
+			}
+
+			if (pressBtn[68]) {
+				if (angXKey < Math.PI / 3.0) {
+					angXKey += 0.03;
+				} else {
+					angXKey = Math.PI / 3.0;
+				}
+			} else if (pressBtn[65]) {
+				if (angXKey > -Math.PI / 3.0) {
+					angXKey -= 0.03;
+				} else {
+					angXKey = -Math.PI / 3.0;
+				}
+			} else {
+				if ( angXKey > 0.0 ) {
+					angXKey -= 0.06;
+					if (angXKey < 0.0) angXKey = 0.0;
+				} else if ( angXKey < 0.0 ) {
+					angXKey += 0.06;
+					if (angXKey > 0.0) angXKey = 0.0;
+				}
+			}
+
+			angX = angXKey;
+			angY = angYKey;
 
 			var fac = 0.95;
 
@@ -191,7 +238,56 @@
 			xN = Math.sin(angXG);
 			yN = Math.sin(angYG);
 
-			console.log(xN + " " + yN);
+			//console.log(xN + " " + yN);
+
+			xG = 97.0/100.0 * xG + 3.0/100.0 * (angXKey * 3.0 / Math.PI);
+			yG = 97.0/100.0 * yG + 3.0/100.0 * (angYKey * 3.0 / Math.PI);
+
+			views[0].camera.position.set(25,12+yG*3,0+xG*-3);
+
+			// Aplicar traslacion
+			cube.translateOnAxis(vecForward, 3);
+
+		}
+
+		function reportOnGamepad() {
+
+			// Obtener objeto Gamepad
+			gp = navigator.getGamepads()[0];
+
+			// Obtener estado de ejes del joystick
+			var x, y;
+			x = gp.axes[0];
+			y = gp.axes[1] * -1;
+
+			// Obtener angulo a partir de ejes
+			var angX;
+			var angY;
+
+			angY = Math.asin(y);
+			angX = Math.asin(x);
+
+
+
+			console.log(angY);
+
+			var fac = 0.95;
+
+			angXG = fac * angXG + (1.0 - fac) * -angX*0.02;
+			angYG = fac * angYG + (1.0 - fac) * -angX*0.01;
+			angZG = fac * angZG + (1.0 - fac) * -angY*0.03;
+
+			// Aplicar rotacion
+			cube.rotateOnAxis(new THREE.Vector3(1,0,0), angXG);
+			cube.rotateOnAxis(new THREE.Vector3(0,1,0), angYG);
+			cube.rotateOnAxis(new THREE.Vector3(0,0,1), angZG);
+
+			var xN, yN;
+
+			xN = Math.sin(angXG);
+			yN = Math.sin(angYG);
+
+			//console.log(xN + " " + yN);
 
 			xG = 97.0/100.0 * xG + 3.0/100.0 * x;
 			yG = 97.0/100.0 * yG + 3.0/100.0 * y;
@@ -208,6 +304,20 @@
 			gp = navigator.getGamepads()[0];
 		  	hasGP = true;
 		});
+
+		onkeydown = function(e){
+		    e = e || event; // to deal with IE
+			if (e.keyCode == 87 || e.keyCode == 83 || e.keyCode == 68 || e.keyCode == 65) {
+				pressBtn[e.keyCode] = true;
+			}
+		}
+
+		onkeyup = function(e){
+		    e = e || event; // to deal with IE
+			if (e.keyCode == 87 || e.keyCode == 83 || e.keyCode == 68 || e.keyCode == 65) {
+				pressBtn[e.keyCode] = false;
+			}
+		}
 
 	</script>
 
