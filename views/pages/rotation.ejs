@@ -9,8 +9,12 @@
 
 	<script>
 
-		var pressBtn = {87: false, 83: false, 68: false, 65: false};
+		var pressBtn = {87: false, 83: false, 68: false, 65: false, 80: false};
 		var angXKey, angYKey;
+		var pressAnt;
+
+		var arrShots = [];
+		var arrDir = [];
 
 		// Datos de vistas para testing
 		var views = [
@@ -38,6 +42,8 @@
 		// Objetos de escenas
 	    var scene, renderer;
 	    var geometry, material, cube, spacecraft;
+		var geoShot;
+		var matShot;
 
 		// Objetos de Gamepad
 		var hasGP;
@@ -54,6 +60,11 @@
 	    animate();
 
 	    function init() {
+
+			geoShot = new THREE.CylinderGeometry( 0.3, 0.3, 2, 32 );
+			matShot = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+
+			pressAnt = false;
 
 			angXKey = angYKey = 0.0;
 
@@ -116,6 +127,10 @@
 				spacecraft.position.y = 0;
 				spacecraft.position.z = 0;
 				cube.add(spacecraft);
+				//shot.position.x = -5;
+				//shot.position.y = -0.1
+				//shot.position.z = 0.8;
+				//spacecraft.add(shot);
 			});
 
 			// Camara de escena
@@ -171,6 +186,42 @@
 			// Obtener angulo a partir de ejes
 			var angX;
 			var angY;
+
+			if (pressBtn[80] && !pressAnt) {
+				// Disparar
+				var shot1 = new THREE.Mesh( geoShot, matShot );
+				shot1.rotation.set(0, 0, Math.PI / 2.0);
+				shot1.position.x = -3;
+				shot1.position.y = -0.1;
+				shot1.position.z = 0.8;
+
+				var shot2 = new THREE.Mesh( geoShot, matShot );
+				shot2.rotation.set(0, 0, Math.PI / 2.0);
+				shot2.position.x = -3;
+				shot2.position.y = -0.1;
+				shot2.position.z = -0.8;
+
+				spacecraft.add(shot1);
+				spacecraft.add(shot2);
+
+				spacecraft.updateMatrixWorld(true);
+				THREE.SceneUtils.detach(shot1, spacecraft, scene);
+
+				THREE.SceneUtils.detach(shot2, spacecraft, scene);
+
+				arrShots.push(shot1);
+				arrShots.push(shot2);
+
+				pressAnt = true;
+			} else if (pressBtn[80]) {
+				pressAnt = true;
+			} else if (!pressBtn[80]) {
+				pressAnt = false;
+			}
+
+			for (var i=0; i < arrShots.length; i ++) {
+				arrShots[i].translateOnAxis(new THREE.Vector3(0,1,0), 10);
+			}
 
 			//angY = Math.asin(y);
 			//angX = Math.asin(x);
@@ -255,6 +306,42 @@
 			// Obtener objeto Gamepad
 			gp = navigator.getGamepads()[0];
 
+			if (gp.buttons[0].pressed && !pressAnt) {
+				// Disparar
+				var shot1 = new THREE.Mesh( geoShot, matShot );
+				shot1.rotation.set(0, 0, Math.PI / 2.0);
+				shot1.position.x = -3;
+				shot1.position.y = -0.1;
+				shot1.position.z = 0.8;
+
+				var shot2 = new THREE.Mesh( geoShot, matShot );
+				shot2.rotation.set(0, 0, Math.PI / 2.0);
+				shot2.position.x = -3;
+				shot2.position.y = -0.1;
+				shot2.position.z = -0.8;
+
+				spacecraft.add(shot1);
+				spacecraft.add(shot2);
+
+				spacecraft.updateMatrixWorld(true);
+				THREE.SceneUtils.detach(shot1, spacecraft, scene);
+
+				THREE.SceneUtils.detach(shot2, spacecraft, scene);
+
+				arrShots.push(shot1);
+				arrShots.push(shot2);
+
+				pressAnt = true;
+			} else if (gp.buttons[0].pressed) {
+				pressAnt = true;
+			} else if (!gp.buttons[0].pressed) {
+				pressAnt = false;
+			}
+
+			for (var i=0; i < arrShots.length; i ++) {
+				arrShots[i].translateOnAxis(new THREE.Vector3(0,1,0), 10);
+			}
+
 			// Obtener estado de ejes del joystick
 			var x, y;
 			x = gp.axes[0];
@@ -269,7 +356,7 @@
 
 
 
-			console.log(angY);
+			//console.log(angY);
 
 			var fac = 0.95;
 
@@ -307,14 +394,14 @@
 
 		onkeydown = function(e){
 		    e = e || event; // to deal with IE
-			if (e.keyCode == 87 || e.keyCode == 83 || e.keyCode == 68 || e.keyCode == 65) {
+			if (e.keyCode == 87 || e.keyCode == 83 || e.keyCode == 68 || e.keyCode == 65 || e.keyCode == 80) {
 				pressBtn[e.keyCode] = true;
 			}
 		}
 
 		onkeyup = function(e){
 		    e = e || event; // to deal with IE
-			if (e.keyCode == 87 || e.keyCode == 83 || e.keyCode == 68 || e.keyCode == 65) {
+			if (e.keyCode == 87 || e.keyCode == 83 || e.keyCode == 68 || e.keyCode == 65 || e.keyCode == 80) {
 				pressBtn[e.keyCode] = false;
 			}
 		}
