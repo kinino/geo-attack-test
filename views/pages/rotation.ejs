@@ -11,7 +11,7 @@
 
 		var nivel;
 
-		var pressBtn = {87: false, 83: false, 68: false, 65: false, 80: false};
+		var pressBtn = {87: false, 83: false, 68: false, 65: false, 75: false, 76: false};
 		var angXKey, angYKey;
 		var pressAnt;
 
@@ -191,7 +191,23 @@
 			var angX;
 			var angY;
 
-			if (pressBtn[80] && !pressAnt) {
+			// Aplicar traslacion
+			var suma = 0;
+			var max = 40;
+			if (pressBtn[76]) {
+				nivel ++;
+				if (nivel > max) nivel = max;
+				suma = addSpeed(nivel, max);
+				console.log(suma);
+			} else {
+				nivel -= 0.5;
+				if (nivel > 0)
+					suma = addSpeed(nivel, max);
+				else
+					nivel = 0;
+			}
+
+			if (pressBtn[75] && !pressAnt) {
 				// Disparar
 				var shot1 = new THREE.Mesh( geoShot, matShot );
 				shot1.rotation.set(0, 0, Math.PI / 2.0);
@@ -217,14 +233,14 @@
 				arrShots.push(shot2);
 
 				pressAnt = true;
-			} else if (pressBtn[80]) {
+			} else if (pressBtn[75]) {
 				pressAnt = true;
-			} else if (!pressBtn[80]) {
+			} else if (!pressBtn[75]) {
 				pressAnt = false;
 			}
 
 			for (var i=0; i < arrShots.length; i ++) {
-				arrShots[i].translateOnAxis(new THREE.Vector3(0,1,0), 10);
+				arrShots[i].translateOnAxis(new THREE.Vector3(0,1,0), 10 + suma);
 			}
 
 			//angY = Math.asin(y);
@@ -298,10 +314,10 @@
 			xG = 97.0/100.0 * xG + 3.0/100.0 * (angXKey * 3.0 / Math.PI);
 			yG = 97.0/100.0 * yG + 3.0/100.0 * (angYKey * 3.0 / Math.PI);
 
-			views[0].camera.position.set(25,12+yG*3,0+xG*-3);
+			views[0].camera.position.set(25+ 0.8 * suma,12+yG*3,0+xG*-3);
 
 			// Aplicar traslacion
-			cube.translateOnAxis(vecForward, 3);
+			cube.translateOnAxis(vecForward, 3 + suma);
 
 		}
 
@@ -417,14 +433,14 @@
 
 		onkeydown = function(e){
 		    e = e || event; // to deal with IE
-			if (e.keyCode == 87 || e.keyCode == 83 || e.keyCode == 68 || e.keyCode == 65 || e.keyCode == 80) {
+			if (e.keyCode == 87 || e.keyCode == 83 || e.keyCode == 68 || e.keyCode == 65 || e.keyCode == 75 || e.keyCode == 76) {
 				pressBtn[e.keyCode] = true;
 			}
 		}
 
 		onkeyup = function(e){
 		    e = e || event; // to deal with IE
-			if (e.keyCode == 87 || e.keyCode == 83 || e.keyCode == 68 || e.keyCode == 65 || e.keyCode == 80) {
+			if (e.keyCode == 87 || e.keyCode == 83 || e.keyCode == 68 || e.keyCode == 65 || e.keyCode == 75 || e.keyCode == 76) {
 				pressBtn[e.keyCode] = false;
 			}
 		}
