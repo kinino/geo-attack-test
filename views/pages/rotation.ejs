@@ -9,6 +9,8 @@
 
 	<script>
 
+		var nivel;
+
 		var pressBtn = {87: false, 83: false, 68: false, 65: false, 80: false};
 		var angXKey, angYKey;
 		var pressAnt;
@@ -60,6 +62,8 @@
 	    animate();
 
 	    function init() {
+
+			nivel = 0;
 
 			geoShot = new THREE.CylinderGeometry( 0.3, 0.3, 2, 32 );
 			matShot = new THREE.MeshBasicMaterial( {color: 0xffff00} );
@@ -306,6 +310,22 @@
 			// Obtener objeto Gamepad
 			gp = navigator.getGamepads()[0];
 
+			// Aplicar traslacion
+			var suma = 0;
+			var max = 40;
+			if (gp.buttons[7].pressed) {
+				nivel ++;
+				if (nivel > max) nivel = max;
+				suma = addSpeed(nivel, max);
+				console.log(suma);
+			} else {
+				nivel -= 0.5;
+				if (nivel > 0)
+					suma = addSpeed(nivel, max);
+				else
+					nivel = 0;
+			}
+
 			if (gp.buttons[0].pressed && !pressAnt) {
 				// Disparar
 				var shot1 = new THREE.Mesh( geoShot, matShot );
@@ -339,7 +359,7 @@
 			}
 
 			for (var i=0; i < arrShots.length; i ++) {
-				arrShots[i].translateOnAxis(new THREE.Vector3(0,1,0), 10);
+				arrShots[i].translateOnAxis(new THREE.Vector3(0,1,0), 10 + suma);
 			}
 
 			// Obtener estado de ejes del joystick
@@ -379,10 +399,13 @@
 			xG = 97.0/100.0 * xG + 3.0/100.0 * x;
 			yG = 97.0/100.0 * yG + 3.0/100.0 * y;
 
-			views[0].camera.position.set(25,12+yG*3,0+xG*-3);
 
-			// Aplicar traslacion
-			cube.translateOnAxis(vecForward, 3);
+
+
+
+			cube.translateOnAxis(vecForward, 3 + suma);
+
+			views[0].camera.position.set(25 + 0.8 * suma,12+yG*3,0+xG*-3);
 
 		}
 
@@ -404,6 +427,14 @@
 			if (e.keyCode == 87 || e.keyCode == 83 || e.keyCode == 68 || e.keyCode == 65 || e.keyCode == 80) {
 				pressBtn[e.keyCode] = false;
 			}
+		}
+
+		function addSpeed(step, limit) {
+			///return 10 / (1 + Math.exp( -0.3 * (5.0/limit * step - 5) ) );
+
+			//return 0.00027239957 * Math.exp(10.0/limit * step);
+			return 0.5 * 14.0/limit * step;
+			//return -0.15 * (10.0/limit * step) * (10.0/limit * step) + 15.0;
 		}
 
 	</script>
