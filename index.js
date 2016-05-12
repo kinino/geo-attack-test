@@ -40,6 +40,7 @@ app.listen(app.get('port'), function() {
 });
 
 var aux;
+var aux2;
 
 /*var threeOBJ = require("three-obj")();
 
