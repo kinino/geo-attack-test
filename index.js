@@ -27,6 +27,10 @@ app.get('/rotation', function(request, response) {
   response.render('pages/rotation');
 });
 
+app.get('/test', function(request, response) {
+  response.render('pages/test');
+});
+
 app.get('/cool', function(request, response) {
   response.send(cool());
 });
