@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="js/three.min.js"></script>
+	<script src="js/jquery-1.11.3.min.js"></script>
+</head>
+
+<body>
+
+	<script>
+		// Cambio dummy 2
+		var nivel;
+
+		var pressBtn = {87: false, 83: false, 68: false, 65: false, 75: false, 76: false};
+		var angXKey, angYKey;
+		var pressAnt;
+
+		var arrShots = [];
+		var arrDir = [];
+
+		// Datos de vistas para testing
+		var views = [
+			{
+				left: 0,
+				bottom: 0,
+				width: 0.5,
+				height: 1.0,
+				fov: 75
+			},
+			{
+				left: 0.5,
+				bottom: 0,
+				width: 0.5,
+				height: 1.0,
+				fov: 100,
+				eye: [-50, 200, 400]
+			}
+		];
+
+		// Pruebas de camara
+		var xG, yG;
+		var angXG, angYG, angZG;
+
+		// Objetos de escenas
+	    var scene, renderer;
+	    var geometry, material, cube, spacecraft;
+		var geoShot;
+		var matShot;
+
+		// Objetos de Gamepad
+		var hasGP;
+		var gp;
+
+		// Vector <0,-1,0> (frente)
+		var vecForward;
+
+		// Objeto fijo
+		var fixedMesh;
+
+		// Metodos basicos
+	    init();
+	    animate();
+
+	    function init() {
+
+			nivel = 0;
+
+			geoShot = new THREE.CylinderGeometry( 0.3, 0.3, 2, 32 );
+			matShot = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+
+			pressAnt = false;
+
+			angXKey = angYKey = 0.0;
+
+			var directionalLight1 = new THREE.DirectionalLight( 0xffffff, 0.5 );
+			directionalLight1.position.set( 0, 1, 0 );
+			var directionalLight2 = new THREE.DirectionalLight( 0xffffff, 0.5 );
+			directionalLight2.position.set( 0, -1, 0 );
+
+			xG = yG = 0;
+			angXG = angYG = angZG = 0;
+
+			hasGP = false;
+			vecForward = new THREE.Vector3(-1,0,0);
+
+	        scene = new THREE.Scene();
+			scene.add( directionalLight1 );
+			scene.add( directionalLight2 );
+
+	        geometry = new THREE.BoxGeometry( 10, 10, 10 );
+	        material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
+
+			var groundGeometry, groundMaterial, ground;
+
+            groundGeometry = new THREE.PlaneGeometry( 10000, 10000, 100, 100 );
+            groundMaterial = new THREE.MeshBasicMaterial({ wireframe: true, color: 0x00FF00 });
+            ground = new THREE.Mesh( groundGeometry, groundMaterial );
+
+			ground.rotation.set(-Math.PI/2, Math.PI/2000, Math.PI);
+
+            scene.add( ground );
+
+			var boxMaterials = [
+				new THREE.MeshBasicMaterial({color:0xFF0000}),
+				new THREE.MeshBasicMaterial({color:0x00FF00}),
+				new THREE.MeshBasicMaterial({color:0x0000FF}),
+				new THREE.MeshBasicMaterial({color:0xFFFF00}),
+				new THREE.MeshBasicMaterial({color:0x00FFFF}),
+				new THREE.MeshBasicMaterial({color:0xFFFFFF})
+			];
+
+			var boxMaterial = new THREE.MeshFaceMaterial(boxMaterials);
+
+	        cube = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true, /*visible:false*/ } ) );
+			fixedMesh = new THREE.Mesh( geometry, material );
+
+			fixedMesh.position.set(-40, 0, 20);
+
+			// Camara de cubo
+			var view = views[0];
+			camera = new THREE.PerspectiveCamera( view.fov, window.innerWidth / window.innerHeight, 1, 10000 );
+			camera.position.set(25,12,0);
+			camera.lookAt(new THREE.Vector3(0,0,0) );
+			view.camera = camera;
+			cube.add(camera);
+
+			var loader = new THREE.JSONLoader();
+    		loader.load('js/space_craft_2.js', function (model, materials) {
+				spacecraft = new THREE.Mesh( model, new THREE.MeshLambertMaterial({ color: 0x1E90FF }));
+				spacecraft.position.x = 0;
+				spacecraft.position.y = 0;
+				spacecraft.position.z = 0;
+				cube.add(spacecraft);
+				//shot.position.x = -5;
+				//shot.position.y = -0.1
+				//shot.position.z = 0.8;
+				//spacecraft.add(shot);
+			});
+
+			// Camara de escena
+			var view2 = views[1];
+			camera = new THREE.PerspectiveCamera( view2.fov, window.innerWidth / window.innerHeight, 1, 10000 );
+			camera.position.x = view2.eye[ 0 ];
+			camera.position.y = view2.eye[ 1 ];
+			camera.position.z = view2.eye[ 2 ];
+			view2.camera = camera;
+
+	        scene.add( cube );
+			scene.add( fixedMesh );
+			//scene.add(camera);
+	        renderer = new THREE.WebGLRenderer();
+	        renderer.setSize( window.innerWidth, window.innerHeight );
+
+	        document.body.appendChild( renderer.domElement );
+
+	    }
+
+	    function animate() {
+
+	        requestAnimationFrame( animate );
+
+			if (hasGP) {
+				reportOnGamepad();
+			} else {
+				reportOnKeyboard();
+			}
+
+	        //renderer.render( scene, camera );
+			for ( var ii = 0; ii < views.length; ++ii ) {
+				view = views[ii];
+				camera = view.camera;
+				//view.updateCamera( camera, scene, mouseX, mouseY );
+				var left   = Math.floor( window.innerWidth  * view.left );
+				var bottom = Math.floor( window.innerHeight * view.bottom );
+				var width  = Math.floor( window.innerWidth  * view.width );
+				var height = Math.floor( window.innerHeight * view.height );
+				renderer.setViewport( left, bottom, width, height );
+				renderer.setScissor( left, bottom, width, height );
+				renderer.enableScissorTest ( true );
+				renderer.setClearColor( view.background );
+				camera.aspect = width / height;
+				camera.updateProjectionMatrix();
+				renderer.render( scene, camera );
+			}
+
+	    }
+
+		function reportOnKeyboard() {
+
+			// Obtener angulo a partir de ejes
+			var angX;
+			var angY;
+
+			// Aplicar traslacion
+			var suma = 0;
+			var max = 40;
+			if (pressBtn[76]) {
+				nivel ++;
+				if (nivel > max) nivel = max;
+				suma = addSpeed(nivel, max);
+				console.log(suma);
+			} else {
+				nivel -= 0.5;
+				if (nivel > 0)
+					suma = addSpeed(nivel, max);
+				else
+					nivel = 0;
+			}
+
+			if (pressBtn[75] && !pressAnt) {
+				// Disparar
+				var shot1 = new THREE.Mesh( geoShot, matShot );
+				shot1.rotation.set(0, 0, Math.PI / 2.0);
+				shot1.position.x = -3;
+				shot1.position.y = -0.1;
+				shot1.position.z = 0.8;
+
+				var shot2 = new THREE.Mesh( geoShot, matShot );
+				shot2.rotation.set(0, 0, Math.PI / 2.0);
+				shot2.position.x = -3;
+				shot2.position.y = -0.1;
+				shot2.position.z = -0.8;
+
+				spacecraft.add(shot1);
+				spacecraft.add(shot2);
+
+				spacecraft.updateMatrixWorld(true);
+				THREE.SceneUtils.detach(shot1, spacecraft, scene);
+
+				THREE.SceneUtils.detach(shot2, spacecraft, scene);
+
+				arrShots.push(shot1);
+				arrShots.push(shot2);
+
+				pressAnt = true;
+			} else if (pressBtn[75]) {
+				pressAnt = true;
+			} else if (!pressBtn[75]) {
+				pressAnt = false;
+			}
+
+			for (var i=0; i < arrShots.length; i ++) {
+				arrShots[i].translateOnAxis(new THREE.Vector3(0,1,0), 10 + suma);
+			}
+
+			//angY = Math.asin(y);
+			//angX = Math.asin(x);
+
+			if (pressBtn[87]) {
+				if (angYKey < Math.PI / 3.0) {
+					angYKey += 0.02;
+				} else {
+					angYKey = Math.PI / 3.0;
+				}
+			} else if (pressBtn[83]) {
+				if (angYKey > -Math.PI / 3.0) {
+					angYKey -= 0.02;
+				} else {
+					angYKey = -Math.PI / 3.0;
+				}
+			} else {
+				if ( angYKey > 0.0 ) {
+					angYKey -= 0.06;
+					if (angYKey < 0.0) angYKey = 0.0;
+				} else if ( angYKey < 0.0 ) {
+					angYKey += 0.06;
+					if (angYKey > 0.0) angYKey = 0.0;
+				}
+			}
+
+			if (pressBtn[68]) {
+				if (angXKey < Math.PI / 100.0) {
+					angXKey += 0.006;
+				} else {
+					angXKey = Math.PI / 100.0;
+				}
+			} else if (pressBtn[65]) {
+				if (angXKey > -Math.PI / 100.0) {
+					angXKey -= 0.006;
+				} else {
+					angXKey = -Math.PI / 100.0;
+				}
+			} else {
+				if ( angXKey > 0.0 ) {
+					angXKey -= 0.01;
+					if (angXKey < 0.0) angXKey = 0.0;
+				} else if ( angXKey < 0.0 ) {
+					angXKey += 0.01;
+					if (angXKey > 0.0) angXKey = 0.0;
+				}
+			}
+
+			angX = angXKey;
+			angY = angYKey;
+
+			var fac = 0.95;
+            console.log(angX);
+			//angXG = fac * angXG + (1.0 - fac) * -angX*0.02;
+			angYG = fac * angYG + (1.0 - fac) * -angX;
+			//angZG = fac * angZG + (1.0 - fac) * -angY*0.03;
+
+			// Aplicar rotacion
+			cube.rotateOnAxis(new THREE.Vector3(1,0,0), angXG);
+			cube.rotateOnAxis(new THREE.Vector3(0,1,0), angYG);
+			cube.rotateOnAxis(new THREE.Vector3(0,0,1), angZG);
+
+			var xN, yN;
+
+			xN = Math.sin(angXG);
+			yN = Math.sin(angYG);
+
+			//console.log(xN + " " + yN);
+
+			xG = 97.0/100.0 * xG + 3.0/100.0 * (angXKey * 3.0 / Math.PI);
+			yG = 97.0/100.0 * yG + 3.0/100.0 * (angYKey * 3.0 / Math.PI);
+
+			views[0].camera.position.set(25+ 0.8 * suma,12+yG*3,0+xG*-3);
+
+			// Aplicar traslacion
+			cube.translateOnAxis(vecForward, 3 + suma);
+
+		}
+
+		function reportOnGamepad() {
+
+			// Obtener objeto Gamepad
+			gp = navigator.getGamepads()[0];
+
+			// Aplicar traslacion
+			var suma = 0;
+			var max = 40;
+			if (gp.buttons[7].pressed) {
+				nivel ++;
+				if (nivel > max) nivel = max;
+				suma = addSpeed(nivel, max);
+				console.log(suma);
+			} else {
+				nivel -= 0.5;
+				if (nivel > 0)
+					suma = addSpeed(nivel, max);
+				else
+					nivel = 0;
+			}
+
+			if (gp.buttons[0].pressed && !pressAnt) {
+				// Disparar
+				var shot1 = new THREE.Mesh( geoShot, matShot );
+				shot1.rotation.set(0, 0, Math.PI / 2.0);
+				shot1.position.x = -3;
+				shot1.position.y = -0.1;
+				shot1.position.z = 0.8;
+
+				var shot2 = new THREE.Mesh( geoShot, matShot );
+				shot2.rotation.set(0, 0, Math.PI / 2.0);
+				shot2.position.x = -3;
+				shot2.position.y = -0.1;
+				shot2.position.z = -0.8;
+
+				spacecraft.add(shot1);
+				spacecraft.add(shot2);
+
+				spacecraft.updateMatrixWorld(true);
+				THREE.SceneUtils.detach(shot1, spacecraft, scene);
+
+				THREE.SceneUtils.detach(shot2, spacecraft, scene);
+
+				arrShots.push(shot1);
+				arrShots.push(shot2);
+
+				pressAnt = true;
+			} else if (gp.buttons[0].pressed) {
+				pressAnt = true;
+			} else if (!gp.buttons[0].pressed) {
+				pressAnt = false;
+			}
+
+			for (var i=0; i < arrShots.length; i ++) {
+				arrShots[i].translateOnAxis(new THREE.Vector3(0,1,0), 10 + suma);
+			}
+
+			// Obtener estado de ejes del joystick
+			var x, y;
+			x = gp.axes[0];
+			y = gp.axes[1] * -1;
+
+			// Obtener angulo a partir de ejes
+			var angX;
+			var angY;
+
+			angY = Math.asin(y);
+			angX = Math.asin(x);
+
+
+
+			//console.log(angY);
+
+			var fac = 0.95;
+
+			angXG = fac * angXG + (1.0 - fac) * -angX*0.02;
+			angYG = fac * angYG + (1.0 - fac) * -angX*0.01;
+			angZG = fac * angZG + (1.0 - fac) * -angY*0.03;
+
+			// Aplicar rotacion
+			cube.rotateOnAxis(new THREE.Vector3(1,0,0), angXG);
+			cube.rotateOnAxis(new THREE.Vector3(0,1,0), angYG);
+			cube.rotateOnAxis(new THREE.Vector3(0,0,1), angZG);
+
+			var xN, yN;
+
+			xN = Math.sin(angXG);
+			yN = Math.sin(angYG);
+
+			//console.log(xN + " " + yN);
+
+			xG = 97.0/100.0 * xG + 3.0/100.0 * x;
+			yG = 97.0/100.0 * yG + 3.0/100.0 * y;
+
+
+
+
+
+			cube.translateOnAxis(vecForward, 3 + suma);
+
+			views[0].camera.position.set(25 + 0.8 * suma,12+yG*3,0+xG*-3);
+
+		}
+
+		window.addEventListener("gamepadconnected", function(e) {
+			console.log("CONEXION");
+			gp = navigator.getGamepads()[0];
+		  	hasGP = true;
+		});
+
+		onkeydown = function(e){
+		    e = e || event; // to deal with IE
+			if (e.keyCode == 87 || e.keyCode == 83 || e.keyCode == 68 || e.keyCode == 65 || e.keyCode == 75 || e.keyCode == 76) {
+				pressBtn[e.keyCode] = true;
+			}
+		}
+
+		onkeyup = function(e){
+		    e = e || event; // to deal with IE
+			if (e.keyCode == 87 || e.keyCode == 83 || e.keyCode == 68 || e.keyCode == 65 || e.keyCode == 75 || e.keyCode == 76) {
+				pressBtn[e.keyCode] = false;
+			}
+		}
+
+		function addSpeed(step, limit) {
+			///return 10 / (1 + Math.exp( -0.3 * (5.0/limit * step - 5) ) );
+
+			//return 0.00027239957 * Math.exp(10.0/limit * step);
+			return 0.5 * 14.0/limit * step;
+			//return -0.15 * (10.0/limit * step) * (10.0/limit * step) + 15.0;
+		}
+
+	</script>
+
+</body>
+</html>

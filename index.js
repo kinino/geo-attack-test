@@ -27,6 +27,14 @@ app.get('/rotation', function(request, response) {
   response.render('pages/rotation');
 });
 
+app.get('/joystick', function(request, response) {
+  response.render('pages/joystick');
+});
+
+app.get('/ground', function(request, response) {
+  response.render('pages/ground');
+});
+
 app.get('/test', function(request, response) {
   response.render('pages/test');
 });

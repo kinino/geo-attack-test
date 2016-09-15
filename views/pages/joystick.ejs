@@ -1,0 +1,170 @@
+<head>
+</head>
+<body>
+
+  <canvas id="left" width="500" height="500" style="background-color:orange"></canvas>
+  <canvas id="right" width="500" height="500" style="background-color:yellow"></canvas>
+  <script>
+
+        var left = document.getElementById("left");
+      var leftCtx = left.getContext("2d");
+
+      var right = document.getElementById("right");
+    var rightCtx = right.getContext("2d");
+
+      var innerCircle = 50;
+      var outerCircle = 100;
+    var width = left.width;
+    var height = left.height;
+    var xL = width / 2.0;
+    var yL = height / 2.0;
+
+    var xR = width / 2.0;
+    var yR = height / 2.0;
+
+    var movingLeft = false;
+    var movingRight = false;
+
+    // Listen for touchmove
+    document.getElementById("left").addEventListener("touchmove", function (e){
+        e.preventDefault();
+
+        movingLeft = true;
+
+        // Capturar X y Y
+        var xx = e.changedTouches[0].pageX;
+        var yy = e.changedTouches[0].pageY;
+
+        if (e.changedTouches.length > 1 && e.changedTouches[1].pageX < e.changedTouches[0].pageX) {
+            console.log(e);
+            console.log(e.changedTouches);
+            console.log(e.changedTouches[1]);
+            console.log(e.changedTouches[1].pageX);
+            xx = e.changedTouches[1].pageX;
+            yy = e.changedTouches[1].pageY;
+            console.log(xx + " " + yy);
+       }
+
+        if ( (xx-250)*(xx-250) + (yy-250)*(yy-250) > 100*100 ) {
+            vecX = xx - 250;
+            vecY = yy - 250;
+            mag = Math.sqrt(vecX * vecX + vecY * vecY);
+            xx = 250 + vecX / mag * 100;
+            yy = 250 + vecY / mag * 100;
+        }
+
+        xL = xx;
+        yL = yy;
+
+    }, false);
+
+    document.getElementById("left").addEventListener("touchend", function (e){
+        e.preventDefault();
+        movingLeft = false;
+    }, false);
+
+    setTimeout(loopLeft, 50);
+    setTimeout(loopRight, 50);
+
+    function loopLeft () {
+        leftCtx.clearRect(0, 0, width, height);
+
+        // Dibujar circulo interior
+        if (movingLeft) {
+            leftCtx.beginPath();
+            leftCtx.arc(xL, yL, innerCircle, 0, 2 * Math.PI);
+            leftCtx.stroke();
+        } else {
+            vecX = xL - 250;
+            vecY = yL - 250;
+            mag = Math.sqrt(vecX * vecX + vecY * vecY);
+            xx = 250 + vecX * 0.8;
+            yy = 250 + vecY * 0.8;
+            xL = xx;
+            yL = yy;
+
+            leftCtx.beginPath();
+            leftCtx.arc(xL, yL, innerCircle, 0, 2 * Math.PI);
+            leftCtx.stroke();
+
+        }
+
+        // Dibujar circulo Limite
+        leftCtx.beginPath();
+        leftCtx.arc(250, 250, outerCircle, 0, 2 * Math.PI);
+        leftCtx.stroke();
+
+        setTimeout(loopLeft, 10);
+    }
+
+    var leftLimit  = document.getElementById("right").getBoundingClientRect().left;
+    var topLimit   = document.getElementById("right").getBoundingClientRect().top;
+
+     /////////////////////////////////////////////////////// RIGHT //////////////////////////////////////////////////////////////////
+     // Listen for touchmove
+     document.getElementById("right").addEventListener("touchmove", function (e){
+         e.preventDefault();
+
+         movingRight = true;
+
+         // Capturar X y Y
+         var xx = e.changedTouches[0].pageX - leftLimit;
+         var yy = e.changedTouches[0].pageY - topLimit;
+
+         if (e.changedTouches.length > 1 && e.changedTouches[1].pageX > e.changedTouches[0].pageX) {
+             xx = e.changedTouches[1].pageX - leftLimit;
+             yy = e.changedTouches[1].pageY - topLimit;
+        }
+
+         if ( (xx-250)*(xx-250) + (yy-250)*(yy-250) > 100*100 ) {
+             vecX = xx - 250;
+             vecY = yy - 250;
+             mag = Math.sqrt(vecX * vecX + vecY * vecY);
+             xx = 250 + vecX / mag * 100;
+             yy = 250 + vecY / mag * 100;
+         }
+
+         xR = xx;
+         yR = yy;
+
+     }, false);
+
+     document.getElementById("right").addEventListener("touchend", function (e){
+         e.preventDefault();
+         movingRight = false;
+     }, false);
+
+     function loopRight () {
+         rightCtx.clearRect(0, 0, width, height);
+
+         // Dibujar circulo interior
+         if (movingRight) {
+             rightCtx.beginPath();
+             rightCtx.arc(xR, yR, innerCircle, 0, 2 * Math.PI);
+             rightCtx.stroke();
+         } else {
+             vecX = xR - 250;
+             vecY = yR - 250;
+             mag = Math.sqrt(vecX * vecX + vecY * vecY);
+             xx = 250 + vecX * 0.8;
+             yy = 250 + vecY * 0.8;
+             xR = xx;
+             yR = yy;
+
+             rightCtx.beginPath();
+             rightCtx.arc(xR, yR, innerCircle, 0, 2 * Math.PI);
+             rightCtx.stroke();
+
+         }
+
+         // Dibujar circulo Limite
+         rightCtx.beginPath();
+         rightCtx.arc(250, 250, outerCircle, 0, 2 * Math.PI);
+         rightCtx.stroke();
+
+         setTimeout(loopRight, 10);
+     }
+
+  </script>
+</body>
+</html>
