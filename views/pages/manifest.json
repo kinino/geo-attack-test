@@ -40,7 +40,6 @@
   ],
   "theme_color": "#9E9E9E",
   "background_color": "#9E9E9E",
-  "start_url": "joystick.ejs",
   "display": "standalone",
   "orientation": "landscape"
 }
