@@ -31,6 +31,10 @@ app.get('/joystick', function(request, response) {
   response.render('pages/joystick');
 });
 
+app.get('/manifest.json', function(request, response) {
+  response.route('pages/manifest.json');
+});
+
 app.get('/ground', function(request, response) {
   response.render('pages/ground');
 });
