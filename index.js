@@ -32,7 +32,7 @@ app.get('/joystick', function(request, response) {
 });
 
 app.get('/manifest.json', function(request, response) {
-  response.route('pages/manifest.json');
+  response.render('pages/manifest.json');
 });
 
 app.get('/ground', function(request, response) {
