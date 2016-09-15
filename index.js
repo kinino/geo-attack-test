@@ -2,6 +2,7 @@ var cool = require('cool-ascii-faces');
 var express = require('express');
 var app = express();
 var three = require('three');
+var fs = require('fs');
 
 app.set('port', (process.env.PORT || 5000));
 
@@ -32,7 +33,7 @@ app.get('/joystick', function(request, response) {
 });
 
 app.get('/manifest.json', function(request, response) {
-  response.send('pages/manifest.json');
+  response.send(fs.readFileSync('views/pages/manifest.json', "utf-8"));
 });
 
 app.get('/ground', function(request, response) {
