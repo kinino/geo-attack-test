@@ -111,6 +111,10 @@
     var leftLimit  = document.getElementById("right").getBoundingClientRect().left;
     var topLimit   = document.getElementById("right").getBoundingClientRect().top;
 
+window.addEventListener("orientationchange", function (e){
+    location.reload();
+}, false);
+
      /////////////////////////////////////////////////////// RIGHT //////////////////////////////////////////////////////////////////
      // Listen for touchmove
      document.getElementById("right").addEventListener("touchmove", function (e){
