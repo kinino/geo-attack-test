@@ -74,8 +74,8 @@
         return false;
     }, false);
 
-    setTimeout(loopLeft, 2000);
-    setTimeout(loopRight, 2000);
+    setTimeout(loopLeft, 50);
+    setTimeout(loopRight, 50);
 
     function loopLeft () {
         leftCtx.clearRect(0, 0, width, height);
@@ -105,7 +105,7 @@
         leftCtx.arc(200, 200, outerCircle, 0, 2 * Math.PI);
         leftCtx.stroke();
 
-        setTimeout(loopLeft, 2000);
+        setTimeout(loopLeft, 50);
     }
 
     var leftLimit  = document.getElementById("right").getBoundingClientRect().left;
@@ -179,9 +179,9 @@
          rightCtx.fillStyle="red";
          rightCtx.fillRect(0,0, 300, 300);
 
-         alert(rightCtx.canvas.getClientRects()[0].left + " " + rightCtx.canvas.getClientRects()[0].top + " " + xR + " " + yR);
+         //alert(rightCtx.canvas.getClientRects()[0].left + " " + rightCtx.canvas.getClientRects()[0].top + " " + xR + " " + yR);
 
-         setTimeout(loopRight, 2000);
+         setTimeout(loopRight, 50);
      }
   </script>
 </body>
