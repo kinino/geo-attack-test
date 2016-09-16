@@ -26,9 +26,10 @@
     var movingLeft = false;
     var movingRight = false;
 
+    window.screen.orientation.lock('landscape');
+
     document.body.addEventListener("touchmove", function(e) {
         e.preventDefault();
-        console.log(e);
     });
 
     // Listen for touchmove
