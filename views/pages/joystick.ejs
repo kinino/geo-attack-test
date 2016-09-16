@@ -26,10 +26,15 @@
     var movingLeft = false;
     var movingRight = false;
 
+    document.body.addEventListener("touchmove", function(e) {
+        e.preventDefault();
+        console.log(e);
+    });
+
     // Listen for touchmove
     document.getElementById("left").addEventListener("touchmove", function (e){
         e.preventDefault();
-
+        e.stopPropagation();
         movingLeft = true;
 
         // Capturar X y Y
@@ -37,13 +42,13 @@
         var yy = e.changedTouches[0].pageY;
 
         if (e.changedTouches.length > 1 && e.changedTouches[1].pageX < e.changedTouches[0].pageX) {
-            console.log(e);
-            console.log(e.changedTouches);
-            console.log(e.changedTouches[1]);
-            console.log(e.changedTouches[1].pageX);
+            //console.log(e);
+            //console.log(e.changedTouches);
+            //console.log(e.changedTouches[1]);
+            //console.log(e.changedTouches[1].pageX);
             xx = e.changedTouches[1].pageX;
             yy = e.changedTouches[1].pageY;
-            console.log(xx + " " + yy);
+            //console.log(xx + " " + yy);
        }
 
         if ( (xx-200)*(xx-200) + (yy-200)*(yy-200) > 100*100 ) {
@@ -105,6 +110,7 @@
      // Listen for touchmove
      document.getElementById("right").addEventListener("touchmove", function (e){
          e.preventDefault();
+         e.stopPropagation();
 
          movingRight = true;
 
