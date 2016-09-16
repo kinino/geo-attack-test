@@ -70,8 +70,8 @@
         movingLeft = false;
     }, false);
 
-    setTimeout(loopLeft, 50);
-    setTimeout(loopRight, 50);
+    setTimeout(loopLeft, 2000);
+    setTimeout(loopRight, 2000);
 
     function loopLeft () {
         leftCtx.clearRect(0, 0, width, height);
@@ -101,7 +101,7 @@
         leftCtx.arc(200, 200, outerCircle, 0, 2 * Math.PI);
         leftCtx.stroke();
 
-        setTimeout(loopLeft, 50);
+        setTimeout(loopLeft, 2000);
     }
 
     var leftLimit  = document.getElementById("right").getBoundingClientRect().left;
@@ -170,7 +170,9 @@
          rightCtx.arc(200, 200, outerCircle, 0, 2 * Math.PI);
          rightCtx.stroke();
 
-         setTimeout(loopRight, 50);
+         alert(rightCtx.canvas.clientLeft + " " + rightCtx.canvas.clientTop);
+
+         setTimeout(loopRight, 2000);
      }
   </script>
 </body>
