@@ -8,10 +8,10 @@
   <canvas id="right" width="400" height="400" style="background-color:yellow"></canvas>
   <script>
         var left = document.getElementById("left");
-      var leftCtx = left.getContext("2d");
+      window.leftCtx = left.getContext("2d");
 
       var right = document.getElementById("right");
-    var rightCtx = right.getContext("2d");
+    window.rightCtx = right.getContext("2d");
 
       var innerCircle = 50;
       var outerCircle = 100;
@@ -70,8 +70,8 @@
         movingLeft = false;
     }, false);
 
-    setTimeout(loopLeft, 2000);
-    setTimeout(loopRight, 2000);
+    setTimeout(loopLeft, 50);
+    setTimeout(loopRight, 50);
 
     function loopLeft () {
         leftCtx.clearRect(0, 0, width, height);
@@ -101,7 +101,7 @@
         leftCtx.arc(200, 200, outerCircle, 0, 2 * Math.PI);
         leftCtx.stroke();
 
-        setTimeout(loopLeft, 2000);
+        setTimeout(loopLeft, 50);
     }
 
     var leftLimit  = document.getElementById("right").getBoundingClientRect().left;
@@ -169,9 +169,8 @@
          rightCtx.beginPath();
          rightCtx.arc(200, 200, outerCircle, 0, 2 * Math.PI);
          rightCtx.stroke();
-         alert("RIGHT");
 
-         setTimeout(loopRight, 2000);
+         setTimeout(loopRight, 50);
      }
   </script>
 </body>
