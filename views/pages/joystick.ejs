@@ -69,6 +69,7 @@
 
     document.getElementById("left").addEventListener("touchend", function (e){
         e.preventDefault();
+        e.stopPropagation();
         movingLeft = false;
         return false;
     }, false);
@@ -142,6 +143,7 @@
 
      document.getElementById("right").addEventListener("touchend", function (e){
          e.preventDefault();
+         e.stopPropagation();
          movingRight = false;
          return false;
      }, false);
