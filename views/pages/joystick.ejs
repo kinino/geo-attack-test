@@ -63,11 +63,14 @@
         xL = xx;
         yL = yy;
 
+        return false;
+
     }, false);
 
     document.getElementById("left").addEventListener("touchend", function (e){
         e.preventDefault();
         movingLeft = false;
+        return false;
     }, false);
 
     setTimeout(loopLeft, 2000);
@@ -134,12 +137,13 @@
 
          xR = xx;
          yR = yy;
-
+         return false;
      }, false);
 
      document.getElementById("right").addEventListener("touchend", function (e){
          e.preventDefault();
          movingRight = false;
+         return false;
      }, false);
 
      function loopRight () {
